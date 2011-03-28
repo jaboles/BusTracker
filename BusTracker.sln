@@ -1,0 +1,25 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "BusTracker", "BusTracker.csdproj", "{95465C9C-C8FE-4EC3-83C1-E3D5E832A3D7}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectDependencies) = postSolution
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{95465C9C-C8FE-4EC3-83C1-E3D5E832A3D7}.Debug.ActiveCfg = Debug|Pocket PC
+		{95465C9C-C8FE-4EC3-83C1-E3D5E832A3D7}.Debug.Build.0 = Debug|Pocket PC
+		{95465C9C-C8FE-4EC3-83C1-E3D5E832A3D7}.Debug.Deploy.0 = Debug|Pocket PC
+		{95465C9C-C8FE-4EC3-83C1-E3D5E832A3D7}.Release.ActiveCfg = Release|Pocket PC
+		{95465C9C-C8FE-4EC3-83C1-E3D5E832A3D7}.Release.Build.0 = Release|Pocket PC
+		{95465C9C-C8FE-4EC3-83C1-E3D5E832A3D7}.Release.Deploy.0 = Release|Pocket PC
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
