@@ -103,6 +103,10 @@ namespace BusTracker
 			{
 				((BusControl)m_busControls[i]).UpdateBusInfo(busInfo[i]);
 			}
+			for (int i = controlCount; i < m_busControls.Count; i++)
+			{
+				((BusControl)m_busControls[i]).Clear();
+			}
 
 			m_minutesLabel.Visible = (controlCount > 0);
 

@@ -9,8 +9,6 @@ namespace BusTracker
 	{
 		public BusControl()
 		{
-			this.Paint += new PaintEventHandler(BusControl_OnPaint);
-
 			m_mainFont = new Font(FontFamily.GenericSansSerif, MAX_FONT_SIZE, FontStyle.Regular);
 			m_largeDestinationFont = new Font(FontFamily.GenericSansSerif, 15, FontStyle.Regular);
 			m_smallDestinationFont = new Font(FontFamily.GenericSansSerif, 7, FontStyle.Bold);
@@ -143,10 +141,12 @@ namespace BusTracker
 			*/
 		}
 
-		private void BusControl_OnPaint(object sender, PaintEventArgs e)
+		public void Clear()
 		{
+			m_routeNumberLabel.Text = "";
+			m_destinationLabel.Text = "";
+			m_departureLabel.Text = "";
 		}
-
 
 		private Label m_routeNumberLabel;
 		private ScrollLabel m_destinationLabel;
