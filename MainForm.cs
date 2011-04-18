@@ -42,8 +42,6 @@ namespace BusTracker
 			m_infoFetcher.BusInfoFetchComplete += new EventHandler(m_infoFetcher_BusInfoFetchComplete);
 			m_infoFetcher.BusInfoSourceAvailabilityChanged += new EventHandler(m_infoFetcher_BusInfoSourceAvailabilityChanged);
 
-			m_screenOn = true;
-
 			this.Menu = null;
 			this.WindowState = FormWindowState.Maximized;
 
@@ -166,7 +164,6 @@ namespace BusTracker
 		private bool m_refreshing;
 		private bool m_disposed;
 		private BusInfoAvailableEventArgs m_fetchedInfoResult;
-		private bool m_screenOn;
 		private System.Windows.Forms.PictureBox m_offlinePictureBox;
 		private int m_backlightHandle;
 
@@ -298,13 +295,11 @@ namespace BusTracker
 		private void ScreenOn()
 		{
 			m_backlightHandle = NativeMethods.SetPowerRequirement("BKL1:", NativeMethods.DevicePowerState.D0, 1,null, 0);
-			m_screenOn = true;
-		}
+	}
 
 		private void ScreenOff()
 		{
 			NativeMethods.ReleasePowerRequirement(m_backlightHandle);
-			m_screenOn = false;
 		}
 
 		private void FlashButton(Button b)

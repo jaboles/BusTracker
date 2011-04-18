@@ -105,13 +105,13 @@ namespace BusTracker
 							BusInfoAvailableEventArgs ea = new BusInfoAvailableEventArgs(i, m_busInfoList, sl);
 							BusInfoAvailable(this, ea);
 						}
-						catch (WebException ex)
+						catch (WebException)
 						{
 							// try again
 							i--;
 							errorCount++;
 						}
-						catch (SocketException ex)
+						catch (SocketException)
 						{
 							// try again
 							i--;

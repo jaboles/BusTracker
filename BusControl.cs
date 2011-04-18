@@ -7,6 +7,13 @@ namespace BusTracker
 {
 	public class BusControl : Control
 	{
+		public static string[] StringConversions = new string[]
+			{
+				"Rd", "rd",
+				"Sr-", "SR-",
+				"Tc", "TC",
+		};
+
 		public BusControl()
 		{
 			m_mainFont = new Font(FontFamily.GenericSansSerif, MAX_FONT_SIZE, FontStyle.Regular);
@@ -60,7 +67,7 @@ namespace BusTracker
 			string route = b.RouteNumber;
 			if (route.Length > 3) route = route.Substring(0, 3);
 			m_routeNumberLabel.Text = route;
-			m_destinationLabel.Text = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(b.Destination.ToLower());
+			m_destinationLabel.Text = GetCanonicalDestinationText(b.Destination);
 			if (b.IsDepartingNow)
 			{
 				m_departureLabel.Text = "!";
@@ -146,6 +153,16 @@ namespace BusTracker
 			m_routeNumberLabel.Text = "";
 			m_destinationLabel.Text = "";
 			m_departureLabel.Text = "";
+		}
+
+		public string GetCanonicalDestinationText(string s)
+		{
+			string text = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(s.ToLower());
+			for (int i = 0; i < StringConversions.Length; i += 2)
+			{
+				text = text.Replace(StringConversions[i], StringConversions[i + 1]);
+			}
+			return text;
 		}
 
 		private Label m_routeNumberLabel;
