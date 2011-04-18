@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Collections;
+using System.IO;
 using System.Windows.Forms;
 using System.Data;
 using System.Reflection;
@@ -13,9 +14,24 @@ namespace BusTracker
 	public class MainForm : System.Windows.Forms.Form
 	{
 		private delegate void MethodInvoker();
+		public const string AppName = "BusTracker";
+		public const string ShortcutFolder = "\\Windows\\Start Menu\\Programs";
+		public const string StartMenuShortcutFolder = "\\Windows\\Start Menu";
 
 		public MainForm()
 		{
+			// Create shortcut on startup if it doesn't exist.
+			string exePath = Assembly.GetExecutingAssembly().GetModules()[0].FullyQualifiedName;
+			string shortcutPath = Path.Combine(ShortcutFolder, string.Format("{0}.lnk", AppName));
+			string startMenuShortcutPath = Path.Combine(StartMenuShortcutFolder, string.Format("{0}.lnk", AppName));
+			if (!File.Exists(shortcutPath) && !File.Exists(startMenuShortcutPath))
+			{
+				StreamWriter f = new StreamWriter(shortcutPath);
+				string shortcutData = string.Format("{0}#\"{1}\"", exePath.Length, exePath);
+				f.WriteLine(shortcutData);
+				f.Close();
+			}
+
 			//
 			// Required for Windows Form Designer support
 			//
