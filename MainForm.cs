@@ -17,17 +17,27 @@ namespace BusTracker
 		public const string AppName = "BusTracker";
 		public const string ShortcutFolder = "\\Windows\\Start Menu\\Programs";
 		public const string StartMenuShortcutFolder = "\\Windows\\Start Menu";
+		public const string StartUpFolder = "\\Windows\\StartUp";
 
 		public MainForm()
 		{
-			// Create shortcut on startup if it doesn't exist.
+			// Create shortcuts on startup if it doesn't exist.
 			string exePath = Assembly.GetExecutingAssembly().GetModules()[0].FullyQualifiedName;
 			string shortcutPath = Path.Combine(ShortcutFolder, string.Format("{0}.lnk", AppName));
 			string startMenuShortcutPath = Path.Combine(StartMenuShortcutFolder, string.Format("{0}.lnk", AppName));
+			string startUpFolderShortcutPath = Path.Combine(StartUpFolder, string.Format("{0}.lnk", AppName));
+			string shortcutData = string.Format("{0}#\"{1}\"", exePath.Length, exePath);
+
+			// Shortcut in start menu
 			if (!File.Exists(shortcutPath) && !File.Exists(startMenuShortcutPath))
 			{
 				StreamWriter f = new StreamWriter(shortcutPath);
-				string shortcutData = string.Format("{0}#\"{1}\"", exePath.Length, exePath);
+				f.WriteLine(shortcutData);
+				f.Close();
+			}
+			if (!File.Exists(startUpFolderShortcutPath))
+			{
+				StreamWriter f = new StreamWriter(startUpFolderShortcutPath);
 				f.WriteLine(shortcutData);
 				f.Close();
 			}
@@ -65,8 +75,10 @@ namespace BusTracker
 
 			m_timeLabel.BackColor = ColorService.BACKGROUND;
 			m_timeLabel.ForeColor = ColorService.TIME;
-
 			m_timeLabel.Font = new Font(FontFamily.GenericSansSerif, 12, FontStyle.Bold);
+
+			m_rebootButton.ForeColor = Color.White;
+			m_rebootButton.BackColor = Color.Red;
 
 			// Load the image for when the tracker is offline
 			System.IO.Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("BusTracker.offline.jpg");
@@ -111,6 +123,10 @@ namespace BusTracker
 		{
 			m_panel.Visible = !offline;
 			m_offlinePictureBox.Visible = offline;
+			m_rebootButton.Visible = offline;
+
+			if (m_rebootTimer.Enabled != offline)
+				m_rebootTimer.Enabled = offline;
 		}
 
 		private void m_infoFetcher_BusInfoAvailable(object sender, BusInfoAvailableEventArgs e)
@@ -160,6 +176,8 @@ namespace BusTracker
 		private System.Windows.Forms.Panel m_quitButtonPanel;
 		private System.Windows.Forms.Button m_quitButton;
 		private System.Windows.Forms.Button m_refreshButton;
+		private System.Windows.Forms.Button m_rebootButton;
+		private System.Windows.Forms.Timer m_rebootTimer;
 		private InfoFetcher m_infoFetcher;
 		private bool m_refreshing;
 		private bool m_disposed;
@@ -183,6 +201,8 @@ namespace BusTracker
 			this.m_refreshButton = new System.Windows.Forms.Button();
 			this.m_quitButtonPanel = new System.Windows.Forms.Panel();
 			this.m_quitButton = new System.Windows.Forms.Button();
+			this.m_rebootButton = new System.Windows.Forms.Button();
+			this.m_rebootTimer = new System.Windows.Forms.Timer();
 			// 
 			// m_panel
 			// 
@@ -230,11 +250,25 @@ namespace BusTracker
 			this.m_quitButton.Size = new System.Drawing.Size(40, 22);
 			this.m_quitButton.Text = "Quit";
 			this.m_quitButton.Click += new System.EventHandler(this.m_quitButton_Click);
+			// 
+			// m_rebootButton
+			// 
+			this.m_rebootButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 17F, System.Drawing.FontStyle.Bold);
+			this.m_rebootButton.Location = new System.Drawing.Point(51, 248);
+			this.m_rebootButton.Size = new System.Drawing.Size(144, 40);
+			this.m_rebootButton.Text = "REBOOT";
+			this.m_rebootButton.Visible = false;
+			this.m_rebootButton.Click += new System.EventHandler(this.m_rebootButton_Click);
+			// 
+			// m_rebootTimer
+			// 
+			this.m_rebootTimer.Interval = 5000;
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 			// 
 			// MainForm
 			// 
 			this.ClientSize = new System.Drawing.Size(240, 320);
+			this.Controls.Add(this.m_rebootButton);
 			this.Controls.Add(this.m_timeLabel);
 			this.Controls.Add(this.m_panel);
 			this.Controls.Add(this.m_refreshButtonPanel);
@@ -334,6 +368,16 @@ namespace BusTracker
 		private void m_infoFetcher_BusInfoSourceAvailabilityChanged(object sender, EventArgs e)
 		{
 			SetOffline(!m_infoFetcher.InfoSourceAvailable);
+		}
+
+		private void m_rebootButton_Click(object sender, System.EventArgs e)
+		{
+			HAL.Reset();
+		}
+
+		private void m_rebootTimer_Tick(object sender, EventArgs e)
+		{
+			HAL.Reset();
 		}
 	}
 }

@@ -12,6 +12,24 @@ namespace BusTracker
 		public const int SHFS_SHOWSTARTICON = 0x0010;
 		public const int SHFS_HIDESTARTICON = 0x0020;
 		
+		// Control Code flags
+		public const uint FILE_DEVICE_UNKNOWN = 0x00000022;
+		public const uint FILE_DEVICE_HAL = 0x00000101;
+		public const uint FILE_DEVICE_CONSOLE = 0x00000102;
+		public const uint FILE_DEVICE_PSL = 0x00000103;
+		public const uint METHOD_BUFFERED = 0;
+		public const uint METHOD_IN_DIRECT = 1;
+		public const uint METHOD_OUT_DIRECT = 2;
+		public const uint METHOD_NEITHER = 3;
+		public const uint FILE_ANY_ACCESS = 0;
+		public const uint FILE_READ_ACCESS = 0x0001;
+		public const uint FILE_WRITE_ACCESS = 0x0002;
+
+		public static uint CTL_CODE(uint DeviceType, uint Function, uint Method, uint Access)
+		{
+			return ((DeviceType << 16) | (Access << 14) | (Function << 2) | Method);
+		}
+
 		public enum DevicePowerState : int
 		{
 
@@ -41,5 +59,8 @@ namespace BusTracker
 
 		[DllImport("coredll.dll")]
 		public static extern int SetPowerRequirement(string DeviceName, DevicePowerState State, uint dwDeviceFlags, string Name, ulong Reserved);
+
+		[DllImport("coredll.dll", SetLastError=true)]
+		public static extern bool KernelIoControl(uint dwIoControlCode, byte[] inBuf, int inBufSize, byte[] outBuf, int outBufSize, ref int bytesReturned);
 	}
 }
