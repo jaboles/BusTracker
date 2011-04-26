@@ -19,6 +19,8 @@ namespace BusTracker
 		public const string StartMenuShortcutFolder = "\\Windows\\Start Menu";
 		public const string StartUpFolder = "\\Windows\\StartUp";
 
+		public const int OFFLINE_REBOOT_TIMEOUT = 300;
+
 		public MainForm()
 		{
 			// Create shortcuts on startup if it doesn't exist.
@@ -121,12 +123,17 @@ namespace BusTracker
 
 		public void SetOffline(bool offline)
 		{
+			bool changed = (m_isOffline != offline);
+
+			m_isOffline = offline;
 			m_panel.Visible = !offline;
 			m_offlinePictureBox.Visible = offline;
 			m_rebootButton.Visible = offline;
 
-			if (m_rebootTimer.Enabled != offline)
-				m_rebootTimer.Enabled = offline;
+			if (offline && changed)
+			{
+				m_timeWentOffline = DateTime.Now;
+			}
 		}
 
 		private void m_infoFetcher_BusInfoAvailable(object sender, BusInfoAvailableEventArgs e)
@@ -177,13 +184,14 @@ namespace BusTracker
 		private System.Windows.Forms.Button m_quitButton;
 		private System.Windows.Forms.Button m_refreshButton;
 		private System.Windows.Forms.Button m_rebootButton;
-		private System.Windows.Forms.Timer m_rebootTimer;
 		private InfoFetcher m_infoFetcher;
 		private bool m_refreshing;
 		private bool m_disposed;
 		private BusInfoAvailableEventArgs m_fetchedInfoResult;
 		private System.Windows.Forms.PictureBox m_offlinePictureBox;
 		private int m_backlightHandle;
+		private DateTime m_timeWentOffline;
+		private bool m_isOffline;
 
 
 		#region Windows Form Designer generated code
@@ -202,7 +210,6 @@ namespace BusTracker
 			this.m_quitButtonPanel = new System.Windows.Forms.Panel();
 			this.m_quitButton = new System.Windows.Forms.Button();
 			this.m_rebootButton = new System.Windows.Forms.Button();
-			this.m_rebootTimer = new System.Windows.Forms.Timer();
 			// 
 			// m_panel
 			// 
@@ -260,11 +267,6 @@ namespace BusTracker
 			this.m_rebootButton.Visible = false;
 			this.m_rebootButton.Click += new System.EventHandler(this.m_rebootButton_Click);
 			// 
-			// m_rebootTimer
-			// 
-			this.m_rebootTimer.Interval = 5000;
-			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-			// 
 			// MainForm
 			// 
 			this.ClientSize = new System.Drawing.Size(240, 320);
@@ -315,6 +317,20 @@ namespace BusTracker
 			{
 				RefreshInfo();
 			}
+
+			if (m_isOffline)
+			{
+				TimeSpan timeSinceWentOffline = DateTime.Now.Subtract(m_timeWentOffline);
+				if (timeSinceWentOffline.TotalSeconds > OFFLINE_REBOOT_TIMEOUT)
+				{
+					HAL.Reset();
+				}
+				else
+				{
+					//int timeRemainingUntilReboot = OFFLINE_REBOOT_TIMEOUT - timeSinceWentOffline.TotalSeconds;
+				}
+			}
+
 			/*if (DateTime.Now.Minute % 3 == 0)
 			{
 				if (m_screenOn)
@@ -329,7 +345,7 @@ namespace BusTracker
 		private void ScreenOn()
 		{
 			m_backlightHandle = NativeMethods.SetPowerRequirement("BKL1:", NativeMethods.DevicePowerState.D0, 1,null, 0);
-	}
+		}
 
 		private void ScreenOff()
 		{
@@ -371,11 +387,6 @@ namespace BusTracker
 		}
 
 		private void m_rebootButton_Click(object sender, System.EventArgs e)
-		{
-			HAL.Reset();
-		}
-
-		private void m_rebootTimer_Tick(object sender, EventArgs e)
 		{
 			HAL.Reset();
 		}

@@ -41,6 +41,12 @@ namespace BusTracker
 			D4, // Off: unpowered
 		}
 
+		public const int POWER_STATE_ON = 0x00010000;
+		public const int POWER_STATE_OFF = 0x00020000;
+		public const int POWER_STATE_SUSPEND = 0x00200000;
+		public const int POWER_FORCE = 4096;
+		public const int POWER_STATE_RESET = 0x00800000;
+
 		[DllImport("coredll.dll")]
 		public extern static bool SHFullScreen(IntPtr hWnd, long dwState);
 
@@ -62,5 +68,8 @@ namespace BusTracker
 
 		[DllImport("coredll.dll", SetLastError=true)]
 		public static extern bool KernelIoControl(uint dwIoControlCode, byte[] inBuf, int inBufSize, byte[] outBuf, int outBufSize, ref int bytesReturned);
+
+		[DllImport("coredll.dll", SetLastError=true)]
+		public static extern int SetSystemPowerState(string psState, int StateFlags, int Options);
 	}
 }

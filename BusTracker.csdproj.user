@@ -39,7 +39,7 @@
                     StartURL = ""
                     StartWorkingDirectory = ""
                     StartWithIE = "false"
-                    SelectedDevice = "Pocket PC Emulator"
+                    SelectedDevice = "Pocket PC Device"
                     DeploymentPlatform = "Pocket PC"
                 />
             </Settings>
