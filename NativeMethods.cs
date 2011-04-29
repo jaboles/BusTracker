@@ -67,6 +67,9 @@ namespace BusTracker
 		public static extern int SetPowerRequirement(string DeviceName, DevicePowerState State, uint dwDeviceFlags, string Name, ulong Reserved);
 
 		[DllImport("coredll.dll", SetLastError=true)]
+		public static extern int DevicePowerNotify(string name, DevicePowerState state, int flags);
+
+		[DllImport("coredll.dll", SetLastError=true)]
 		public static extern bool KernelIoControl(uint dwIoControlCode, byte[] inBuf, int inBufSize, byte[] outBuf, int outBufSize, ref int bytesReturned);
 
 		[DllImport("coredll.dll", SetLastError=true)]

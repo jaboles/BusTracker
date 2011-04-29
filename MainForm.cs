@@ -106,6 +106,7 @@ namespace BusTracker
 			m_versionLabel.Text = m_currentVersion.ToShortDateString() + " " + m_currentVersion.ToShortTimeString();
 			m_availableVersion = (new FileInfo(updatePath)).LastWriteTime;
 			m_availableVersionLabel.Text = m_availableVersion.ToShortDateString() + " " + m_availableVersion.ToShortTimeString();
+			m_revisionLabel.Text = RevisionNumber.ToString();
 
 			//ScreenOn();
 		}
@@ -419,8 +420,6 @@ namespace BusTracker
 
 		private void m_updateTimer_Tick(object sender, System.EventArgs e)
 		{
-			//m_updateTimer.Enabled = false;
-
 			if (m_startupScreenDelay == 0 && m_splashPanel.Visible)
 			{
 				if (!m_checkedForUpdatesYet)
@@ -482,26 +481,6 @@ namespace BusTracker
 					//int timeRemainingUntilReboot = OFFLINE_REBOOT_TIMEOUT - timeSinceWentOffline.TotalSeconds;
 				}
 			}
-
-			/*if (DateTime.Now.Minute % 3 == 0)
-			{
-				if (m_screenOn)
-					ScreenOff();
-				else
-					ScreenOn();
-			}*/
-
-			//m_updateTimer.Enabled = true;
-		}
-
-		private void ScreenOn()
-		{
-			m_backlightHandle = NativeMethods.SetPowerRequirement("BKL1:", NativeMethods.DevicePowerState.D0, 1,null, 0);
-		}
-
-		private void ScreenOff()
-		{
-			NativeMethods.ReleasePowerRequirement(m_backlightHandle);
 		}
 
 		private void FlashButton(Button b)
@@ -541,6 +520,15 @@ namespace BusTracker
 		private void m_rebootButton_Click(object sender, System.EventArgs e)
 		{
 			HAL.Reset();
+		}
+
+		public int RevisionNumber
+		{
+			get
+			{
+				string revisionNumberStr = SVNRevisionTag.Substring(SVNRevisionTag.IndexOf(" "), SVNRevisionTag.LastIndexOf(" ") - SVNRevisionTag.IndexOf(" "));
+				return Int32.Parse(revisionNumberStr);
+			}
 		}
 	}
 }
