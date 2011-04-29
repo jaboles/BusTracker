@@ -20,7 +20,7 @@ namespace BusTracker
 		public const string StartMenuShortcutFolder = "\\Windows\\Start Menu";
 		public const string StartUpFolder = "\\Windows\\StartUp";
 		public const string UpdateShare = "\\\\jb-winxp-es\\BTUpdate";
-		public const string SVNRevisionTag = "$Revision$";
+		public const string SVNRevisionTag = "$Rev$";
 
 		public const int OFFLINE_REBOOT_TIMEOUT = 300;
 
