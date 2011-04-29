@@ -15,20 +15,38 @@ namespace BusTracker
 	{
 		private delegate void MethodInvoker();
 		public const string AppName = "BusTracker";
+		public const string BinaryName = "BusTracker.exe";
 		public const string ShortcutFolder = "\\Windows\\Start Menu\\Programs";
 		public const string StartMenuShortcutFolder = "\\Windows\\Start Menu";
 		public const string StartUpFolder = "\\Windows\\StartUp";
+		public const string UpdateShare = "\\\\jb-winxp-es\\BTUpdate";
+		public const string SVNRevisionTag = "$Revision$";
 
 		public const int OFFLINE_REBOOT_TIMEOUT = 300;
 
+		bool m_checkedForUpdatesYet = true;
+		private int m_startupScreenDelay = 5;
+		private DateTime m_currentVersion;
+		private DateTime m_availableVersion;
+
 		public MainForm()
 		{
+			InitializeComponent();
+
+			System.IO.Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("BusTracker.startup.jpg");
+			m_startupScreenPictureBox.Image = new Bitmap(stream);
+
 			// Create shortcuts on startup if it doesn't exist.
 			string exePath = Assembly.GetExecutingAssembly().GetModules()[0].FullyQualifiedName;
+			string exeFolder = exePath.Substring(0, exePath.LastIndexOf("\\"));
 			string shortcutPath = Path.Combine(ShortcutFolder, string.Format("{0}.lnk", AppName));
 			string startMenuShortcutPath = Path.Combine(StartMenuShortcutFolder, string.Format("{0}.lnk", AppName));
 			string startUpFolderShortcutPath = Path.Combine(StartUpFolder, string.Format("{0}.lnk", AppName));
 			string shortcutData = string.Format("{0}#\"{1}\"", exePath.Length, exePath);
+			string updatePath = Path.Combine(UpdateShare, BinaryName);
+
+
+
 
 			// Shortcut in start menu
 			if (!File.Exists(shortcutPath) && !File.Exists(startMenuShortcutPath))
@@ -43,11 +61,6 @@ namespace BusTracker
 				f.WriteLine(shortcutData);
 				f.Close();
 			}
-
-			//
-			// Required for Windows Form Designer support
-			//
-			InitializeComponent();
 
 			m_infoFetcher = new InfoFetcher();
 			m_infoFetcher.BusInfoAvailable += new BusInfoAvailableEventHandler(m_infoFetcher_BusInfoAvailable);
@@ -83,12 +96,17 @@ namespace BusTracker
 			m_rebootButton.BackColor = Color.Red;
 
 			// Load the image for when the tracker is offline
-			System.IO.Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("BusTracker.offline.jpg");
+			stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("BusTracker.offline.jpg");
 			m_offlinePictureBox.Image = new Bitmap(stream);
 
 			UpdateStopControlsLayout();
-			RefreshInfo();
 			m_updateTimer.Enabled = true;
+
+			m_currentVersion = (new FileInfo(exePath)).LastWriteTime;
+			m_versionLabel.Text = m_currentVersion.ToShortDateString() + " " + m_currentVersion.ToShortTimeString();
+			m_availableVersion = (new FileInfo(updatePath)).LastWriteTime;
+			m_availableVersionLabel.Text = m_availableVersion.ToShortDateString() + " " + m_availableVersion.ToShortTimeString();
+
 			//ScreenOn();
 		}
 		/// <summary>
@@ -184,6 +202,15 @@ namespace BusTracker
 		private System.Windows.Forms.Button m_quitButton;
 		private System.Windows.Forms.Button m_refreshButton;
 		private System.Windows.Forms.Button m_rebootButton;
+		private System.Windows.Forms.Panel m_splashPanel;
+		private System.Windows.Forms.Label m_versionCaptionLabel;
+		private System.Windows.Forms.Label m_revisionCaptionLabel;
+		private System.Windows.Forms.Label m_availableVersionCaptionLabel;
+		private System.Windows.Forms.Label m_versionLabel;
+		private System.Windows.Forms.Label m_availableVersionLabel;
+		private System.Windows.Forms.Label m_revisionLabel;
+		private System.Windows.Forms.Label m_titleLabel;
+		private System.Windows.Forms.PictureBox m_startupScreenPictureBox;
 		private InfoFetcher m_infoFetcher;
 		private bool m_refreshing;
 		private bool m_disposed;
@@ -210,6 +237,15 @@ namespace BusTracker
 			this.m_quitButtonPanel = new System.Windows.Forms.Panel();
 			this.m_quitButton = new System.Windows.Forms.Button();
 			this.m_rebootButton = new System.Windows.Forms.Button();
+			this.m_splashPanel = new System.Windows.Forms.Panel();
+			this.m_versionCaptionLabel = new System.Windows.Forms.Label();
+			this.m_revisionCaptionLabel = new System.Windows.Forms.Label();
+			this.m_availableVersionCaptionLabel = new System.Windows.Forms.Label();
+			this.m_versionLabel = new System.Windows.Forms.Label();
+			this.m_availableVersionLabel = new System.Windows.Forms.Label();
+			this.m_revisionLabel = new System.Windows.Forms.Label();
+			this.m_startupScreenPictureBox = new System.Windows.Forms.PictureBox();
+			this.m_titleLabel = new System.Windows.Forms.Label();
 			// 
 			// m_panel
 			// 
@@ -267,9 +303,82 @@ namespace BusTracker
 			this.m_rebootButton.Visible = false;
 			this.m_rebootButton.Click += new System.EventHandler(this.m_rebootButton_Click);
 			// 
+			// m_splashPanel
+			// 
+			this.m_splashPanel.BackColor = System.Drawing.Color.Black;
+			this.m_splashPanel.Controls.Add(this.m_titleLabel);
+			this.m_splashPanel.Controls.Add(this.m_startupScreenPictureBox);
+			this.m_splashPanel.Controls.Add(this.m_revisionLabel);
+			this.m_splashPanel.Controls.Add(this.m_availableVersionLabel);
+			this.m_splashPanel.Controls.Add(this.m_versionLabel);
+			this.m_splashPanel.Controls.Add(this.m_availableVersionCaptionLabel);
+			this.m_splashPanel.Controls.Add(this.m_revisionCaptionLabel);
+			this.m_splashPanel.Controls.Add(this.m_versionCaptionLabel);
+			this.m_splashPanel.Size = new System.Drawing.Size(240, 320);
+			// 
+			// m_versionCaptionLabel
+			// 
+			this.m_versionCaptionLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
+			this.m_versionCaptionLabel.ForeColor = System.Drawing.Color.White;
+			this.m_versionCaptionLabel.Location = new System.Drawing.Point(8, 248);
+			this.m_versionCaptionLabel.Size = new System.Drawing.Size(96, 16);
+			this.m_versionCaptionLabel.Text = "Current Version:";
+			// 
+			// m_revisionCaptionLabel
+			// 
+			this.m_revisionCaptionLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
+			this.m_revisionCaptionLabel.ForeColor = System.Drawing.Color.White;
+			this.m_revisionCaptionLabel.Location = new System.Drawing.Point(8, 267);
+			this.m_revisionCaptionLabel.Size = new System.Drawing.Size(96, 16);
+			this.m_revisionCaptionLabel.Text = "Revision:";
+			// 
+			// m_availableVersionCaptionLabel
+			// 
+			this.m_availableVersionCaptionLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold);
+			this.m_availableVersionCaptionLabel.ForeColor = System.Drawing.Color.White;
+			this.m_availableVersionCaptionLabel.Location = new System.Drawing.Point(8, 294);
+			this.m_availableVersionCaptionLabel.Size = new System.Drawing.Size(104, 16);
+			this.m_availableVersionCaptionLabel.Text = "Available Version:";
+			// 
+			// m_versionLabel
+			// 
+			this.m_versionLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular);
+			this.m_versionLabel.ForeColor = System.Drawing.Color.White;
+			this.m_versionLabel.Location = new System.Drawing.Point(120, 248);
+			this.m_versionLabel.Size = new System.Drawing.Size(112, 16);
+			// 
+			// m_availableVersionLabel
+			// 
+			this.m_availableVersionLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular);
+			this.m_availableVersionLabel.ForeColor = System.Drawing.Color.White;
+			this.m_availableVersionLabel.Location = new System.Drawing.Point(120, 294);
+			this.m_availableVersionLabel.Size = new System.Drawing.Size(112, 16);
+			// 
+			// m_revisionLabel
+			// 
+			this.m_revisionLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular);
+			this.m_revisionLabel.ForeColor = System.Drawing.Color.White;
+			this.m_revisionLabel.Location = new System.Drawing.Point(120, 267);
+			this.m_revisionLabel.Size = new System.Drawing.Size(112, 16);
+			// 
+			// m_startupScreenPictureBox
+			// 
+			this.m_startupScreenPictureBox.Size = new System.Drawing.Size(240, 192);
+			this.m_startupScreenPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+			// 
+			// m_titleLabel
+			// 
+			this.m_titleLabel.Font = new System.Drawing.Font("Arial", 24F, System.Drawing.FontStyle.Bold);
+			this.m_titleLabel.ForeColor = System.Drawing.Color.White;
+			this.m_titleLabel.Location = new System.Drawing.Point(16, 200);
+			this.m_titleLabel.Size = new System.Drawing.Size(216, 40);
+			this.m_titleLabel.Text = "BusTracker";
+			this.m_titleLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+			// 
 			// MainForm
 			// 
 			this.ClientSize = new System.Drawing.Size(240, 320);
+			this.Controls.Add(this.m_splashPanel);
 			this.Controls.Add(this.m_rebootButton);
 			this.Controls.Add(this.m_timeLabel);
 			this.Controls.Add(this.m_panel);
@@ -311,6 +420,49 @@ namespace BusTracker
 		private void m_updateTimer_Tick(object sender, System.EventArgs e)
 		{
 			//m_updateTimer.Enabled = false;
+
+			if (m_startupScreenDelay == 0 && m_splashPanel.Visible)
+			{
+				if (!m_checkedForUpdatesYet)
+				{
+					// Check for update
+					string exePath = Assembly.GetExecutingAssembly().GetModules()[0].FullyQualifiedName;
+					string exeFolder = exePath.Substring(0, exePath.LastIndexOf("\\"));
+
+
+					NativeMethods.ProcessInfo pi;
+					byte[] si = new byte[128];
+					if (m_availableVersion.CompareTo(m_currentVersion) > 0)
+					{
+						// Newer version is available.
+						// Launch updater.
+						NativeMethods.CreateProcess(
+							Path.Combine(exeFolder, "BTUpdater.exe"),
+							BinaryName + " " + UpdateShare,
+							IntPtr.Zero,
+							IntPtr.Zero,
+							false,
+							0,
+							IntPtr.Zero,
+							exeFolder,
+							si,
+							out pi);
+
+						Application.Exit();
+					}
+				
+					m_checkedForUpdatesYet = true;
+				}
+
+				RefreshInfo();
+				m_splashPanel.Visible = false;
+				return;
+			}
+			else if (m_startupScreenDelay > 0)
+			{
+				m_startupScreenDelay--;
+				return;
+			}
 
 			m_timeLabel.Text = DateTime.Now.ToString("h:mm tt");
 			if (DateTime.Now.Second == 0)

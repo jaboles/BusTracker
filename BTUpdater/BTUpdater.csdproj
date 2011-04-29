@@ -3,19 +3,19 @@
         ProjectType = "Local"
         ProductVersion = "7.10.6030"
         SchemaVersion = "1.0"
-        ProjectGuid = "{95465C9C-C8FE-4EC3-83C1-E3D5E832A3D7}"
+        ProjectGuid = "{14E24EC9-659C-47CD-A61C-CAA1A961C7C6}"
     >
         <Build>
             <Settings
-                ApplicationIcon = "BusTracker.ico"
+                ApplicationIcon = ""
                 AssemblyKeyContainerName = ""
-                AssemblyName = "BusTracker"
+                AssemblyName = "BTUpdater"
                 AssemblyOriginatorKeyFile = ""
                 DelaySign = "false"
                 OutputType = "WinExe"
                 OutputFileFolder = "\Program Files\BusTracker"
-                RootNamespace = "BusTracker"
-                StartupObject = "BusTracker.MainForm"
+                RootNamespace = "BTUpdater"
+                StartupObject = ""
             >
                 <Platform Name = "Pocket PC" />
                 <Config
@@ -132,84 +132,17 @@
                     BuildAction = "Compile"
                 />
                 <File
-                    RelPath = "BusControl.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
-                    RelPath = "BusInfo.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
-                    RelPath = "BusInfoAvailableEvent.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
-                    RelPath = "BusTracker.ico"
-                    BuildAction = "None"
-                />
-                <File
-                    RelPath = "ColorService.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
-                    RelPath = "HAL.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
-                    RelPath = "HtmlEntities.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
-                    RelPath = "InfoFetcher.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
-                    RelPath = "MainForm.cs"
+                    RelPath = "Form1.cs"
                     SubType = "Form"
                     BuildAction = "Compile"
                 />
                 <File
-                    RelPath = "MainForm.resx"
-                    DependentUpon = "MainForm.cs"
+                    RelPath = "Form1.resx"
+                    DependentUpon = "Form1.cs"
                     BuildAction = "EmbeddedResource"
                 />
                 <File
                     RelPath = "NativeMethods.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
-                    RelPath = "offline.jpg"
-                    BuildAction = "EmbeddedResource"
-                />
-                <File
-                    RelPath = "ScrollLabel.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
-                    RelPath = "startup.jpg"
-                    BuildAction = "EmbeddedResource"
-                />
-                <File
-                    RelPath = "StopControl.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
-                    RelPath = "StopLocation.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
-                    RelPath = "StopsToLoad.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
