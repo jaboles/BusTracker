@@ -47,86 +47,103 @@ namespace BusTracker
 
 		private void ThreadEntry()
 		{
-			while (!m_shouldStop)
+			try
 			{
-				System.Threading.Thread.Sleep(1000);
-				int errorCount = 0;
-
-				if (m_shouldRun)
+				while (!m_shouldStop)
 				{
-					m_shouldRun = false;
+					System.Threading.Thread.Sleep(1000);
+					MainRoutine();
+				}
+			}
+			catch (Exception)
+			{
+				// This will crash the app, so restart the PDA.
+				if (!MainForm.s_attemptingQuit)
+				{
+					HAL.Reset();
+				}
+			}
+		}
 
-					for (int i = 0; i < m_stopsToLoad.Length && errorCount < ERROR_LIMIT; i++)
+		private void MainRoutine()
+		{
+			int errorCount = 0;
+
+			if (m_shouldRun)
+			{
+				m_shouldRun = false;
+
+				for (int i = 0; i < m_stopsToLoad.Length && errorCount < ERROR_LIMIT; i++)
+				{
+					try
 					{
-						try
+						StopLocation sl = m_stopsToLoad[i];
+						HttpWebRequest req = (HttpWebRequest)WebRequest.Create(sl.Url);
+						req.Timeout = 10000;
+						req.KeepAlive = true;
+						WebResponse response = req.GetResponse();
+						Stream receiveStream = response.GetResponseStream();
+						Encoding encoding = Encoding.GetEncoding("utf-8");
+						StreamReader sr = new StreamReader(receiveStream, encoding);
+						string data = sr.ReadToEnd();
+						sr.Close();
+						
+						m_busInfoList.Clear();
+						for (Match m = m_busInfoRegex.Match(data); m.Success; m = m.NextMatch())
 						{
-							StopLocation sl = m_stopsToLoad[i];
-							WebRequest req = WebRequest.Create(sl.Url);
-							req.Timeout = 10000;
-							WebResponse response = req.GetResponse();
-							Stream receiveStream = response.GetResponseStream();
-							Encoding encoding = Encoding.GetEncoding("utf-8");
-							StreamReader sr = new StreamReader(receiveStream, encoding);
-							string data = sr.ReadToEnd();
-							sr.Close();
-							
-							m_busInfoList.Clear();
-							for (Match m = m_busInfoRegex.Match(data); m.Success; m = m.NextMatch())
+							string routeNumber = m.Groups[1].Value.Trim();
+							string destination = m.Groups[2].Value.Trim();
+							string arrivalTime = m.Groups[3].Value.Trim();
+							string arrivalStatus = m.Groups[4].Value.Trim();
+							string minutesToDeparture = m.Groups[5].Value.Trim();
+
+							BusInfo b = new BusInfo();
+							b.RouteNumber = routeNumber;
+							b.Destination = HttpUtility.HtmlDecode(destination);
+							b.ArrivalTime = arrivalTime;
+							b.ArrivalStatus = arrivalStatus;
+							if (minutesToDeparture.ToUpper().Equals("NOW"))
 							{
-								string routeNumber = m.Groups[1].Value.Trim();
-								string destination = m.Groups[2].Value.Trim();
-								string arrivalTime = m.Groups[3].Value.Trim();
-								string arrivalStatus = m.Groups[4].Value.Trim();
-								string minutesToDeparture = m.Groups[5].Value.Trim();
-
-								BusInfo b = new BusInfo();
-								b.RouteNumber = routeNumber;
-								b.Destination = HttpUtility.HtmlDecode(destination);
-								b.ArrivalTime = arrivalTime;
-								b.ArrivalStatus = arrivalStatus;
-								if (minutesToDeparture.ToUpper().Equals("NOW"))
-								{
-									b.MinutesToDeparture = 0;
-									b.IsDepartingNow = true;
-								}
-								else
-								{
-									b.IsDepartingNow = false;
-									b.MinutesToDeparture = Convert.ToInt32(minutesToDeparture);
-								}
-
-								m_busInfoList.Add(b);
+								b.MinutesToDeparture = 0;
+								b.IsDepartingNow = true;
 							}
-							
-							// A successful request. We're online!
-							errorCount = 0;
-							UpdateInfoSourceAvailable(true);
+							else
+							{
+								b.IsDepartingNow = false;
+								b.MinutesToDeparture = Convert.ToInt32(minutesToDeparture);
+							}
 
-							BusInfoAvailableEventArgs ea = new BusInfoAvailableEventArgs(i, m_busInfoList, sl);
-							BusInfoAvailable(this, ea);
+							m_busInfoList.Add(b);
 						}
-						catch (WebException)
-						{
-							// try again
-							i--;
-							errorCount++;
-						}
-						catch (SocketException)
-						{
-							// try again
-							i--;
-							errorCount++;
-						}
-					}
+						
+						// A successful request. We're online!
+						errorCount = 0;
+						UpdateInfoSourceAvailable(true);
 
-					if (errorCount >= ERROR_LIMIT)
-					{
-						UpdateInfoSourceAvailable(false);
+						BusInfoAvailableEventArgs ea = new BusInfoAvailableEventArgs(i, m_busInfoList, sl);
+						BusInfoAvailable(this, ea);
 					}
-					else
+					catch (WebException)
 					{
-						BusInfoFetchComplete(this, EventArgs.Empty);
+						// try again
+						i--;
+						errorCount++;
 					}
+					catch (SocketException)
+					{
+						// try again
+						i--;
+						errorCount++;
+					}
+				}
+
+				if (errorCount >= ERROR_LIMIT)
+				{
+					UpdateInfoSourceAvailable(false);
+				}
+				else
+				{
+					BusInfoFetchComplete(this, EventArgs.Empty);
 				}
 			}
 		}

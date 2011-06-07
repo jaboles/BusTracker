@@ -36,7 +36,8 @@ namespace BTUpdater
 
 			string path = Path.Combine(shareName, binaryName);
 
-
+			
+			System.Threading.Thread.Sleep(3000);
 
 			File.Copy(path, ".\\" + binaryName, true);
 

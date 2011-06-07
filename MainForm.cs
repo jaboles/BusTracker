@@ -22,12 +22,13 @@ namespace BusTracker
 		public const string UpdateShare = "\\\\jb-winxp-es\\BTUpdate";
 		public const string SVNRevisionTag = "$Rev$";
 
-		public const int OFFLINE_REBOOT_TIMEOUT = 300;
+		public const int OFFLINE_REBOOT_TIMEOUT = 30;
 
-		bool m_checkedForUpdatesYet = true;
+		private bool m_checkedForUpdatesYet = true;
 		private int m_startupScreenDelay = 5;
 		private DateTime m_currentVersion;
 		private DateTime m_availableVersion;
+		public static bool s_attemptingQuit = false;
 
 		public MainForm()
 		{
@@ -217,7 +218,7 @@ namespace BusTracker
 		private bool m_disposed;
 		private BusInfoAvailableEventArgs m_fetchedInfoResult;
 		private System.Windows.Forms.PictureBox m_offlinePictureBox;
-		private int m_backlightHandle;
+		//private int m_backlightHandle;
 		private DateTime m_timeWentOffline;
 		private bool m_isOffline;
 
@@ -298,8 +299,8 @@ namespace BusTracker
 			// m_rebootButton
 			// 
 			this.m_rebootButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 17F, System.Drawing.FontStyle.Bold);
-			this.m_rebootButton.Location = new System.Drawing.Point(51, 248);
-			this.m_rebootButton.Size = new System.Drawing.Size(144, 40);
+			this.m_rebootButton.Location = new System.Drawing.Point(41, 248);
+			this.m_rebootButton.Size = new System.Drawing.Size(164, 40);
 			this.m_rebootButton.Text = "REBOOT";
 			this.m_rebootButton.Visible = false;
 			this.m_rebootButton.Click += new System.EventHandler(this.m_rebootButton_Click);
@@ -397,7 +398,18 @@ namespace BusTracker
 
 		static void Main() 
 		{
-			Application.Run(new MainForm());
+			try
+			{
+				Application.Run(new MainForm());
+			}
+			catch (Exception)
+			{
+				// App crashing, reset the PDA.
+				if (!s_attemptingQuit)
+				{
+					HAL.Reset();
+				}
+			}
 		}
 
 		private void m_refreshButton_Click(object sender, System.EventArgs e)
@@ -409,13 +421,11 @@ namespace BusTracker
 
 		private void m_quitButton_Click(object sender, System.EventArgs e)
 		{
+			s_attemptingQuit = true;
 			FlashButton(m_quitButton);
 
 			while (m_refreshing)
 				System.Threading.Thread.Sleep(500);
-			this.Dispose(true);
-
-			m_infoFetcher.Stop();
 		}
 
 		private void m_updateTimer_Tick(object sender, System.EventArgs e)
@@ -447,7 +457,8 @@ namespace BusTracker
 							si,
 							out pi);
 
-						Application.Exit();
+						Exit();
+						return;
 					}
 				
 					m_checkedForUpdatesYet = true;
@@ -478,7 +489,9 @@ namespace BusTracker
 				}
 				else
 				{
-					//int timeRemainingUntilReboot = OFFLINE_REBOOT_TIMEOUT - timeSinceWentOffline.TotalSeconds;
+					int timeRemainingUntilReboot = OFFLINE_REBOOT_TIMEOUT - (int)timeSinceWentOffline.TotalSeconds;
+					string buttonCaption = string.Format("REBOOT ({0})", timeRemainingUntilReboot);
+					m_rebootButton.Text = buttonCaption;
 				}
 			}
 		}
@@ -529,6 +542,14 @@ namespace BusTracker
 				string revisionNumberStr = SVNRevisionTag.Substring(SVNRevisionTag.IndexOf(" "), SVNRevisionTag.LastIndexOf(" ") - SVNRevisionTag.IndexOf(" "));
 				return Int32.Parse(revisionNumberStr);
 			}
+		}
+
+		private void Exit()
+		{
+			s_attemptingQuit = true;
+
+			this.Dispose(true);
+			m_infoFetcher.Stop();
 		}
 	}
 }

@@ -48,15 +48,13 @@ namespace BusTracker
 		
 		protected override void OnPaintBackground(PaintEventArgs e)
 		{
+			// Optimization -- override background paint to do nothing
 		}
 
 		protected override void OnPaint(PaintEventArgs e)
 		{
 			if (m_needToScroll)
 			{
-				int x1 = -m_scrollPosition;
-				int x2 = -m_scrollPosition + m_textWidth + EXTRA_SPACE;
-
 				e.Graphics.DrawImage(m_bmp, -m_scrollPosition, 0); 
 			}
 			else
