@@ -22,6 +22,8 @@ namespace BusTracker
 		public const string UpdateShare = "\\\\jb-winxp-es\\BTUpdate";
 		public const string SVNRevisionTag = "$Rev$";
 
+		private StopLocation[] m_stops;
+
 		public const int OFFLINE_REBOOT_TIMEOUT = 30;
 
 		private bool m_checkedForUpdatesYet = true;
@@ -30,8 +32,9 @@ namespace BusTracker
 		private DateTime m_availableVersion;
 		public static bool s_attemptingQuit = false;
 
-		public MainForm()
+		public MainForm(StopLocation[] stops)
 		{
+			m_stops = stops;
 			InitializeComponent();
 
 			System.IO.Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("BusTracker.startup.jpg");
@@ -71,10 +74,10 @@ namespace BusTracker
 			this.Menu = null;
 			this.WindowState = FormWindowState.Maximized;
 
-			m_stopControls = new StopControl[StopsToLoad.Stops.Length];
+			m_stopControls = new StopControl[stops.Length];
 			for (int i = 0; i < m_stopControls.Length; i++)
 			{
-				m_stopControls[i] = new StopControl(StopsToLoad.Stops[i].FriendlyName, StopsToLoad.Stops[i].MaxBuses);
+				m_stopControls[i] = new StopControl(stops[i].FriendlyName, m_stops[i].MaxBuses);
 				m_stopControls[i].Left = 0;
 				m_panel.Controls.Add(m_stopControls[i]);
 			}
@@ -138,7 +141,7 @@ namespace BusTracker
 
 		public void RefreshInfo()
 		{
-			m_infoFetcher.Start(StopsToLoad.Stops);
+			m_infoFetcher.Start(m_stops);
 		}
 
 		public void SetOffline(bool offline)
@@ -400,7 +403,7 @@ namespace BusTracker
 		{
 			try
 			{
-				Application.Run(new MainForm());
+				Application.Run(new MainForm(StopsToLoad.Stops));
 			}
 			catch (Exception)
 			{
@@ -424,8 +427,12 @@ namespace BusTracker
 			s_attemptingQuit = true;
 			FlashButton(m_quitButton);
 
+
+
 			while (m_refreshing)
 				System.Threading.Thread.Sleep(500);
+
+			Exit();
 		}
 
 		private void m_updateTimer_Tick(object sender, System.EventArgs e)

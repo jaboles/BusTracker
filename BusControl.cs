@@ -12,6 +12,7 @@ namespace BusTracker
 				"Rd", "rd",
 				"Sr-", "SR-",
 				"Tc", "TC",
+				" Via ", " via "
 		};
 
 		public BusControl()
